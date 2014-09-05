@@ -2,6 +2,7 @@ require 'json'
 require 'faraday'
 require 'uuid'
 require 'roo'
+require 'rubyXL'
 require 'erb'
 require 'zip'
 require 'semantic'
@@ -16,6 +17,7 @@ require 'openstudio/analysis/version'
 
 # translators
 require 'openstudio/analysis/translator/excel'
+require 'openstudio/analysis/translator/json_to_spreadsheet'
 
 # helpers / core_ext
 require 'openstudio/helpers/string'

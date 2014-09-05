@@ -52,3 +52,13 @@ end
 
 desc 'reinstall the gem (uninstall, build, and reinstall'
 task reinstall: [:uninstall, :install]
+
+
+desc 'temp test for JSON to spreadsheet'
+task :test_json do
+  require 'openstudio-analysis'
+  filename = 'spec/files/medium_office.json'
+  t = OpenStudio::Analysis::Translator::JsonToSpreadsheet.new filename
+  t.translate
+
+end
