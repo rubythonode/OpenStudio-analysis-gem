@@ -67,12 +67,34 @@ module OpenStudio
 
           # try reading a spreadsheet that is macro enabled!
           # This doesn't work.
+          f = File.expand_path 'doc/template-blank.xlsx'
+          puts f
+          if File.exist?(f)
+            book = RubyXL::Parser.parse(f)
+            ws = book[0]
+            a = ws.extract_data
+
+            puts a.inspect
+            b = book.add_worksheet 'something new'
+            b.add_cell(5, 5, 'i guess this works')
+            book.write 'read-then-write.xlsx'
+          else
+            fail "file #{f} does not exist"
+          end
+
+          # try reading a spreadsheet that is macro enabled!
+          # This doesn't work.
           f = File.expand_path 'doc/template-macro.xlsm'
           puts f
           if File.exist?(f)
-            book = RubyXL::Parser.parse f
-            book.add_worksheet 'something new'
-            book.write 'read-then-write.xlsm'
+            book = RubyXL::Parser.parse(f)
+            ws = book[0]
+            a = ws.extract_data
+
+            puts a.inspect
+            b = book.add_worksheet 'something new'
+            b.add_cell(5, 5, 'i guess this works')
+            book.write 'read-then-write-macro.xlsm'
           else
             fail "file #{f} does not exist"
           end
