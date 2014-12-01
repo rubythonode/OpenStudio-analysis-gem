@@ -8,13 +8,16 @@ module OpenStudio
         attr_reader :outputs
         attr_reader :models
         attr_reader :weather_files
-        attr_reader :measure_path
+        attr_reader :measure_paths
+        attr_reader :worker_inits
+        attr_reader :worker_finals
         attr_reader :export_path
         attr_reader :cluster_name
         attr_reader :variables
         attr_reader :algorithm
         attr_reader :problem
         attr_reader :run_setup
+        attr_reader :aws_tags
 
         # remove these once we have classes to construct the JSON file
         attr_accessor :name
@@ -45,14 +48,17 @@ module OpenStudio
           @weather_files = []
           @models = []
           @other_files = []
+          @worker_inits = []
+          @worker_finals = []
           @export_path = './export'
-          @measure_path = './measures'
+          @measure_paths = []
           @number_of_samples = 0 # todo: remove this
           @problem = {}
           @algorithm = {}
           @template_json = nil
           @outputs = {}
           @run_setup = {}
+          @aws_tags = []
         end
 
         def process
@@ -92,7 +98,9 @@ module OpenStudio
 
         def validate_analysis
           # Setup the paths and do some error checking
-          fail "Measures directory '#{@measure_path}' does not exist" unless Dir.exist?(@measure_path)
+          @measure_paths.each do |mp|
+            fail "Measures directory '#{mp}' does not exist" unless Dir.exist?(mp)
+          end
 
           @models.uniq!
           fail 'No seed models defined in spreadsheet' if @models.empty?
@@ -109,11 +117,27 @@ module OpenStudio
           end
 
           # This can be a directory as well
-          @other_files.each do |of|
-            fail "Other files do not exist for: #{of[:path]}" unless File.exist?(of[:path])
+          @other_files.each do |f|
+            fail "Other files do not exist for: #{f[:path]}" unless File.exist?(f[:path])
+          end
+
+          @worker_inits.each do |f|
+            fail "Worker initialization file does not exist for: #{f[:path]}" unless File.exist?(f[:path])
+          end
+
+          @worker_finals.each do |f|
+            fail "Worker finalization file does not exist for: #{f[:path]}" unless File.exist?(f[:path])
           end
 
           FileUtils.mkdir_p(@export_path)
+
+          # verify that the measure display names are unique
+          # puts @variables.inspect
+          measure_display_names = @variables['data'].map { |m| m['enabled'] ? m['display_name'] : nil }.compact
+          measure_display_names_mult = measure_display_names.select { |m| measure_display_names.count(m) > 1 }.uniq
+          if measure_display_names_mult && !measure_display_names_mult.empty?
+            fail "Measure Display Names are not unique for '#{measure_display_names_mult.join('\', \'')}'"
+          end
 
           # verify that all continuous variables have all the data needed and create a name maps
           variable_names = []
@@ -344,9 +368,9 @@ module OpenStudio
         # Package up the seed, weather files, and measures
         def save_analysis_zip(model)
           def add_directory_to_zip(zipfile, local_directory, relative_zip_directory)
-            # pp "Add Directory #{local_directory}"
+            # puts "Add Directory #{local_directory}"
             Dir[File.join("#{local_directory}", '**', '**')].each do |file|
-              # pp "Adding File #{file}"
+              # puts "Adding File #{file}"
               zipfile.add(file.sub(local_directory, relative_zip_directory), file)
             end
             zipfile
@@ -364,35 +388,51 @@ module OpenStudio
             # Add only the measures that are defined in the spreadsheet
             required_measures = @variables['data'].map { |v| v['measure_file_name_directory'] if v['enabled'] }.compact.uniq
 
+            # Convert this into a hash which looks like {name: measure_name}. This will allow us to add more
+            # fields to the measure, such as which directory is the measure.
+            required_measures = required_measures.map { |value| { name: value } }
+
             # first validate that all the measures exist
             errors = []
             required_measures.each do |measure|
-              measure_dir_to_add = "#{@measure_path}/#{measure}"
+              next if measure.key? :path
 
-              if Dir.exist? measure_dir_to_add
-                unless File.exist? "#{measure_dir_to_add}/measure.rb"
-                  errors << "Measure in directory '#{@measure_path}/#{measure}' did not contain a measure.rb file"
+              @measure_paths.each do |measure_path|
+                measure_dir_to_add = "#{measure_path}/#{measure[:name]}"
+                if Dir.exist? measure_dir_to_add
+                  if File.exist? "#{measure_dir_to_add}/measure.rb"
+                    measure[:path] = measure_path
+                    break
+                  else
+                    errors << "Measure in directory '#{@measure_path}/#{measure}' did not contain a measure.rb file"
+                  end
                 end
-              else
+              end
+            end
+
+            # validate that all measures were found
+            required_measures.each do |measure|
+              unless measure.key? :path
                 errors << "Could not find measure '#{measure}' in directory '#{@measure_path}'"
               end
             end
+
             fail errors.join("\n") unless errors.empty?
 
             required_measures.each do |measure|
-              measure_dir_to_add = "#{@measure_path}/#{measure}"
+              measure_dir_to_add = "#{measure[:path]}/#{measure[:name]}"
               puts "  Adding measure #{measure_dir_to_add} to zip file"
               Dir[File.join(measure_dir_to_add, '**')].each do |file|
                 if File.directory?(file)
                   if File.basename(file) == 'resources' || File.basename(file) == 'lib'
-                    add_directory_to_zip(zipfile, file, "./measures/#{measure}/#{File.basename(file)}")
+                    add_directory_to_zip(zipfile, file, "./measures/#{measure[:name]}/#{File.basename(file)}")
                   else
-                    # pp "Skipping Directory #{File.basename(file)}"
+                    # puts "Skipping Directory #{File.basename(file)}"
                   end
                 else
-                  # pp "Adding File #{file}"
+                  # puts "Adding File #{file}"
                   # added_measures << measure_dir unless added_measures.include? measure_dir
-                  zipfile.add(file.sub(measure_dir_to_add, "./measures/#{measure}/"), file)
+                  zipfile.add(file.sub(measure_dir_to_add, "./measures/#{measure[:name]}/"), file)
                 end
               end
             end
@@ -405,6 +445,34 @@ module OpenStudio
               Dir[File.join(others[:path], '**', '**')].each do |file|
                 zipfile.add(file.sub(others[:path], "./lib/#{others[:lib_zip_name]}/"), file)
               end
+            end
+
+            # puts "Adding in Worker initialize scripts #{@worker_inits}"
+            @worker_inits.each_with_index do |f, index|
+              # this is ordered
+              f[:ordered_file_name] = "#{index.to_s.rjust(2, '0')}_#{File.basename(f[:path])}"
+              f[:index] = index
+
+              zipfile.add(f[:path].sub(f[:path], "./lib/worker_initialize/#{f[:ordered_file_name]}"), f[:path])
+              arg_file = "#{File.basename(f[:ordered_file_name], '.*')}.args"
+              file = Tempfile.new('arg')
+              file.write(f[:args])
+              zipfile.add("./lib/worker_initialize/#{arg_file}", file)
+              file.close
+            end
+
+            # puts "Adding in Worker finalize scripts #{@worker_finals}"
+            @worker_finals.each_with_index do |f, index|
+              # this is ordered
+              f[:ordered_file_name] = "#{index.to_s.rjust(2, '0')}_#{File.basename(f[:path])}"
+              f[:index] = index
+
+              zipfile.add(f[:path].sub(f[:path], "./lib/worker_finalize/#{f[:ordered_file_name]}"), f[:path])
+              arg_file = "#{File.basename(f[:ordered_file_name], '.*')}.args"
+              file = Tempfile.new('arg')
+              file.write(f[:args])
+              zipfile.add("./lib/worker_finalize/#{arg_file}", file)
+              file.close
             end
           end
         end
@@ -453,6 +521,8 @@ module OpenStudio
           b_weather_files = false
           b_models = false
           b_other_libs = false
+          b_worker_init = false
+          b_worker_final = false
 
           rows.each do |row|
             if row[0] == 'Settings'
@@ -463,6 +533,8 @@ module OpenStudio
               b_weather_files = false
               b_models = false
               b_other_libs = false
+              b_worker_init = false
+              b_worker_final = false
               next
             elsif row[0] == 'Running Setup'
               b_settings = false
@@ -472,6 +544,8 @@ module OpenStudio
               b_weather_files = false
               b_models = false
               b_other_libs = false
+              b_worker_init = false
+              b_worker_final = false
               next
             elsif row[0] == 'Problem Definition'
               b_settings = false
@@ -481,6 +555,8 @@ module OpenStudio
               b_weather_files = false
               b_models = false
               b_other_libs = false
+              b_worker_init = false
+              b_worker_final = false
               next
             elsif row[0] == 'Algorithm Setup'
               b_settings = false
@@ -490,6 +566,8 @@ module OpenStudio
               b_weather_files = false
               b_models = false
               b_other_libs = false
+              b_worker_init = false
+              b_worker_final = false
               next
             elsif row[0] == 'Weather Files'
               b_settings = false
@@ -499,6 +577,8 @@ module OpenStudio
               b_weather_files = true
               b_models = false
               b_other_libs = false
+              b_worker_init = false
+              b_worker_final = false
               next
             elsif row[0] == 'Models'
               b_settings = false
@@ -508,6 +588,8 @@ module OpenStudio
               b_weather_files = false
               b_models = true
               b_other_libs = false
+              b_worker_init = false
+              b_worker_final = false
               next
             elsif row[0] == 'Other Library Files'
               b_settings = false
@@ -517,6 +599,30 @@ module OpenStudio
               b_weather_files = false
               b_models = false
               b_other_libs = true
+              b_worker_init = false
+              b_worker_final = false
+              next
+            elsif row[0] =~ /Worker Initialization Scripts/
+              b_settings = false
+              b_run_setup = false
+              b_problem_setup = false
+              b_algorithm_setup = false
+              b_weather_files = false
+              b_models = false
+              b_other_libs = false
+              b_worker_init = true
+              b_worker_final = false
+              next
+            elsif row[0] =~ /Worker Finalization Scripts/
+              b_settings = false
+              b_run_setup = false
+              b_problem_setup = false
+              b_algorithm_setup = false
+              b_weather_files = false
+              b_models = false
+              b_other_libs = false
+              b_worker_init = false
+              b_worker_final = true
               next
             end
 
@@ -527,14 +633,19 @@ module OpenStudio
               @settings["#{row[0].snake_case}"] = row[1] if row[0]
               @cluster_name = @settings['cluster_name'].snake_case if @settings['cluster_name']
 
+              if row[0] == 'AWS Tag'
+                @aws_tags << row[1].strip
+              end
+
               # type some of the values that we know
               @settings['proxy_port'] = @settings['proxy_port'].to_i if @settings['proxy_port']
+
             elsif b_run_setup
               if row[0] == 'Analysis Name'
                 if row[1]
                   @name = row[1]
                 else
-                  @name = UUID.new.generate
+                  @name = SecureRandom.uuid
                 end
                 @analysis_name = @name.snake_case
               end
@@ -549,9 +660,9 @@ module OpenStudio
               if row[0] == 'Measure Directory'
                 tmp_filepath = row[1]
                 if (Pathname.new tmp_filepath).absolute?
-                  @measure_path = tmp_filepath
+                  @measure_paths << tmp_filepath
                 else
-                  @measure_path = File.expand_path(File.join(@root_path, tmp_filepath))
+                  @measure_paths << File.expand_path(File.join(@root_path, tmp_filepath))
                 end
               end
               @run_setup["#{row[0].snake_case}"] = row[1] if row[0]
@@ -584,7 +695,7 @@ module OpenStudio
               if row[1]
                 tmp_m_name = row[1]
               else
-                tmp_m_name = UUID.new.generate
+                tmp_m_name = SecureRandom.uuid
               end
               # Only add models if the row is flagged
               if row[0] && row[0].downcase == 'model'
@@ -602,14 +713,33 @@ module OpenStudio
               end
 
               @other_files << { lib_zip_name: row[1], path: other_path }
+            elsif b_worker_init
+              worker_init_path = row[1]
+              unless (Pathname.new worker_init_path).absolute?
+                worker_init_path = File.expand_path(File.join(@root_path, worker_init_path))
+              end
+
+              @worker_inits << { name: row[0], path: worker_init_path, args: row[2] }
+            elsif b_worker_final
+              worker_final_path = row[1]
+              unless (Pathname.new worker_final_path).absolute?
+                worker_final_path = File.expand_path(File.join(@root_path, worker_final_path))
+              end
+
+              @worker_finals << { name: row[0], path: worker_final_path, args: row[2] }
             end
+
+            next
           end
+
+          # do some last checks
+          @measure_paths = ['./measures'] if @measure_paths.empty?
         end
 
         # parse_variables will parse the XLS spreadsheet and save the data into
         # a higher level JSON file.  The JSON file is historic and it should really
         # be omitted as an intermediate step
-        def   parse_variables
+        def parse_variables
           # clean remove whitespace and unicode chars
           # The parse is a unique format (https://github.com/Empact/roo/blob/master/lib/roo/base.rb#L444)
           # If you add a new column and you want that variable in the hash, then you must add it here.
@@ -788,7 +918,7 @@ module OpenStudio
 
                 # parse the choices/enums
                 if var['type'] == 'enum' || var['type'] == 'choice' # this is now a choice
-                  var['distribution']['enumerations'] = row[:enums].gsub('|', '').split(',').map { |v| v.strip }
+                  var['distribution']['enumerations'] = row[:enums].gsub('|', '').split(',').map(&:strip)
                 elsif var['type'] == 'bool'
                   var['distribution']['enumerations'] = []
                   var['distribution']['enumerations'] << 'true' # TODO: should this be a real bool?
@@ -818,7 +948,7 @@ module OpenStudio
               # generate name id
               # TODO: put this into a logger. puts "Parsing measure #{row[1]}"
               display_name = row[:measure_name_or_var_type]
-              measure_name = display_name.downcase.strip.gsub('-', '_').gsub(' ', '_')
+              measure_name = display_name.downcase.strip.gsub('-', '_').gsub(' ', '_').gsub('__', '_')
               data['data'][measure_index]['display_name'] = display_name
               data['data'][measure_index]['name'] = measure_name
               data['data'][measure_index]['enabled'] = row[:enabled] == 'TRUE' ? true : false
