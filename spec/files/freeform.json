@@ -1,21 +1,17 @@
 {
   "analysis": {
-    "display_name": "Example Analysis",
-    "name": "example_analysis",
+    "display_name": "Freeform Analysis",
+    "name": "freeform_analysis",
     "output_variables": [
 
     ],
     "problem": {
       "algorithm": {
-        "sample_method": "all_variables",
-        "number_of_samples": 100,
-        "number_of_generations": 20,
-        "objective_functions": [
-
-        ]
+        "dlm_comment": "Do we need to have an algorithm?  There is no algorithm for freeform."
       },
       "name": "Problem",
-      "workflow": [
+      "dlm_comment": "Renamed workflow to measures, there is not a single workflow that applies to all points.",
+      "measures": [
         {
           "measure_definition_class_name": "ReduceLightingLoadsByPercentage",
           "measure_definition_directory": "./measures/reduce_lighting_loads_by_percentage",
@@ -25,60 +21,7 @@
           "measure_type": "RubyMeasure",
           "arguments": [
             {
-              "display_name": "Apply the Measure to a Specific Space Type or to the Entire Model.",
-              "display_name_short": "Apply the Measure to a Specific Space Type or to the Entire Model.",
-              "name": "space_type",
-              "value": "*Entire Building*",
-              "value_type": "choice"
-            },
-            {
-              "display_name": "Increase in Material and Installation Cost for Lighting per Floor Area (%).",
-              "display_name_short": "Increase in Material and Installation Cost for Lighting per Floor Area (%).",
-              "name": "material_and_installation_cost",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "Increase in Demolition Costs for Lighting per Floor Area (%).",
-              "display_name_short": "Increase in Demolition Costs for Lighting per Floor Area (%).",
-              "name": "demolition_cost",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "Years Until Costs Start (whole years).",
-              "display_name_short": "Years Until Costs Start (whole years).",
-              "name": "years_until_costs_start",
-              "value": 0,
-              "value_type": "integer"
-            },
-            {
-              "display_name": "Demolition Costs Occur During Initial Construction?",
-              "display_name_short": "Demolition Costs Occur During Initial Construction?",
-              "name": "demo_cost_initial_const",
-              "value": true,
-              "value_type": "bool"
-            },
-            {
-              "display_name": "Expected Life (whole years).",
-              "display_name_short": "Expected Life (whole years).",
-              "name": "expected_life",
-              "value": 15,
-              "value_type": "integer"
-            },
-            {
-              "display_name": "Increase O & M Costs for Lighting per Floor Area (%).",
-              "display_name_short": "Increase O & M Costs for Lighting per Floor Area (%).",
-              "name": "om_cost",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "O & M Frequency (whole years).",
-              "display_name_short": "O & M Frequency (whole years).",
-              "name": "om_frequency",
-              "value": 1,
-              "value_type": "integer"
+              "dlm_comment": "I think it would be best to have all measure inputs be variables rather than all inputs be static arguments."
             }
           ],
           "display_name": "Reduce Lighting Loads by Percentage",
@@ -93,48 +36,7 @@
               },
               "display_name": "Lighting Power Reduction",
               "display_name_short": "Lighting Power Reduction",
-              "maximum": 10.0,
-              "minimum": 0.0,
-              "relation_to_output": "",
-              "static_value": 30.0,
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "discrete",
-                    "values_and_weights": [
-                      {
-                        "value": 10,
-                        "weight": 0.1
-                      },
-                      {
-                        "value": 20,
-                        "weight": 0.4
-                      },
-                      {
-                        "value": 40,
-                        "weight": 0.2
-                      },
-                      {
-                        "value": 60,
-                        "weight": 0.3
-                      }
-                    ]
-                  },
-                  {
-                    "name": "lower_bounds",
-                    "value": 0.0
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": 10.0
-                  },
-                  {
-                    "name": "modes",
-                    "value": 5.0
-                  }
-                ],
-                "type": "discrete_uncertain"
-              },
+              "dlm_comment": "Removing the maximum, minimum, relation_to_output, static_value, uncertainty_description elements.",
               "units": "",
               "value_type": "double",
               "variable": true,
@@ -143,7 +45,7 @@
               "version_uuid": "b002c720-5b1a-0133-99f6-00ff10d0310d"
             }
           ],
-          "workflow_index": 0,
+          "dlm_comment": "Removing workflow_index",
           "workflow_step_type": "Measure",
           "uuid": "affb25d0-5b1a-0133-99f1-00ff10d0310d",
           "version_uuid": "affd21b0-5b1a-0133-99f3-00ff10d0310d"
@@ -156,34 +58,6 @@
           "measure_definition_version_uuid": "b0081e81-5b1a-0133-99f9-00ff10d0310d",
           "measure_type": "RubyMeasure",
           "arguments": [
-            {
-              "display_name": "Apply the Measure to a Specific Space Type or to the Entire Model.",
-              "display_name_short": "Apply the Measure to a Specific Space Type or to the Entire Model.",
-              "name": "space_type",
-              "value": "*Entire Building*",
-              "value_type": "choice"
-            },
-            {
-              "display_name": "Increase in Material and Installation Costs for Building per Affected Floor Area ($/ft^2).",
-              "display_name_short": "Increase in Material and Installation Costs for Building per Affected Floor Area ($/ft^2).",
-              "name": "material_and_installation_cost",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "O & M Costs for Construction per Affected Floor Area ($/ft^2).",
-              "display_name_short": "O & M Costs for Construction per Affected Floor Area ($/ft^2).",
-              "name": "om_cost",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "O & M Frequency (whole years).",
-              "display_name_short": "O & M Frequency (whole years).",
-              "name": "om_frequency",
-              "value": 1,
-              "value_type": "integer"
-            }
           ],
           "display_name": "ReduceSpaceInfiltrationByPercentage",
           "name": "reducespaceinfiltrationbypercentage",
@@ -197,35 +71,6 @@
               },
               "display_name": "Space Infiltration Power Reduction",
               "display_name_short": "Space Infiltration Power Reduction",
-              "maximum": 30.0,
-              "minimum": 0.0,
-              "relation_to_output": "",
-              "static_value": 30.0,
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "lower_bounds",
-                    "value": 0.0
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": 30.0
-                  },
-                  {
-                    "name": "stddev",
-                    "value": 5.0
-                  },
-                  {
-                    "name": "delta_x",
-                    "value": null
-                  },
-                  {
-                    "name": "modes",
-                    "value": 10.0
-                  }
-                ],
-                "type": "uniform_uncertain"
-              },
               "units": "",
               "value_type": "double",
               "variable": true,
@@ -234,430 +79,73 @@
               "version_uuid": "b0114670-5b1a-0133-9a01-00ff10d0310d"
             }
           ],
-          "workflow_index": 1,
           "workflow_step_type": "Measure",
           "uuid": "b0095700-5b1a-0133-99fb-00ff10d0310d",
           "version_uuid": "b00bef20-5b1a-0133-99fd-00ff10d0310d"
-        },
-        {
-          "measure_definition_class_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_directory": "./measures/example_measure_auto_directory_name",
-          "measure_definition_display_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_uuid": "b013de90-5b1a-0133-9a03-00ff10d0310d",
-          "measure_definition_version_uuid": "b01676b0-5b1a-0133-9a05-00ff10d0310d",
-          "measure_type": "RubyMeasure",
-          "arguments": [
-
-          ],
-          "display_name": "Adjust Thermostat Setpoints by Degrees",
-          "name": "adjust_thermostat_setpoints_by_degrees",
-          "variables": [
-            {
-              "argument": {
-                "display_name": "Degrees Fahrenheit to Adjust Cooling Setpoint By.",
-                "display_name_short": "Degrees Fahrenheit to Adjust Cooling Setpoint By.",
-                "name": "cooling_adjustment",
-                "value_type": "double"
-              },
-              "display_name": "Degrees Fahrenheit to Adjust Cooling Setpoint By.",
-              "display_name_short": "Degrees Fahrenheit to Adjust Cooling Setpoint By.",
-              "maximum": 4.0,
-              "minimum": -4.0,
-              "relation_to_output": "",
-              "static_value": 1.0,
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "lower_bounds",
-                    "value": -4.0
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": 4.0
-                  },
-                  {
-                    "name": "stddev",
-                    "value": 1.3333333333333333
-                  },
-                  {
-                    "name": "delta_x",
-                    "value": null
-                  },
-                  {
-                    "name": "modes",
-                    "value": 0.0
-                  }
-                ],
-                "type": "uniform_uncertain"
-              },
-              "units": "",
-              "value_type": "double",
-              "variable": true,
-              "variable_type": "RubyContinuousVariable",
-              "uuid": "b01df0f0-5b1a-0133-9a0b-00ff10d0310d",
-              "version_uuid": "b02013e0-5b1a-0133-9a0d-00ff10d0310d"
-            },
-            {
-              "argument": {
-                "display_name": "Degrees Fahrenheit to Adjust heating Setpoint By.",
-                "display_name_short": "Degrees Fahrenheit to Adjust heating Setpoint By.",
-                "name": "heating_adjustment",
-                "value_type": "double"
-              },
-              "display_name": "Degrees Fahrenheit to Adjust heating Setpoint By.",
-              "display_name_short": "Degrees Fahrenheit to Adjust heating Setpoint By.",
-              "maximum": 4.0,
-              "minimum": -4.0,
-              "relation_to_output": "",
-              "static_value": -1.0,
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "lower_bounds",
-                    "value": -4.0
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": 4.0
-                  },
-                  {
-                    "name": "stddev",
-                    "value": 1.3333333333333333
-                  },
-                  {
-                    "name": "delta_x",
-                    "value": null
-                  },
-                  {
-                    "name": "modes",
-                    "value": 0.0
-                  }
-                ],
-                "type": "uniform_uncertain"
-              },
-              "units": "",
-              "value_type": "double",
-              "variable": true,
-              "variable_type": "RubyContinuousVariable",
-              "uuid": "b022ac00-5b1a-0133-9a0f-00ff10d0310d",
-              "version_uuid": "b0251d10-5b1a-0133-9a11-00ff10d0310d"
-            },
-            {
-              "argument": {
-                "display_name": "Alter Design Day Thermostats?",
-                "display_name_short": "Alter Design Day Thermostats?",
-                "name": "alter_design_days",
-                "value_type": "bool"
-              },
-              "display_name": "Alter Design Day Thermostats?",
-              "display_name_short": "Alter Design Day Thermostats?",
-              "maximum": "true",
-              "minimum": "true",
-              "relation_to_output": "",
-              "static_value": "FALSE",
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "discrete",
-                    "values_and_weights": [
-                      {
-                        "value": true,
-                        "weight": 0.8
-                      },
-                      {
-                        "value": false,
-                        "weight": 0.2
-                      }
-                    ]
-                  },
-                  {
-                    "name": "lower_bounds",
-                    "value": "true"
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": "true"
-                  },
-                  {
-                    "name": "modes",
-                    "value": "false"
-                  }
-                ],
-                "type": "discrete_uncertain"
-              },
-              "units": "",
-              "value_type": "bool",
-              "variable": true,
-              "variable_type": "RubyContinuousVariable",
-              "uuid": "b028c6b0-5b1a-0133-9a13-00ff10d0310d",
-              "version_uuid": "b02bfb10-5b1a-0133-9a15-00ff10d0310d"
-            }
-          ],
-          "workflow_index": 2,
-          "workflow_step_type": "Measure",
-          "uuid": "b018c0b0-5b1a-0133-9a07-00ff10d0310d",
-          "version_uuid": "b01ae3a0-5b1a-0133-9a09-00ff10d0310d"
-        },
-        {
-          "measure_definition_class_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_directory": "./measures/example_measure_auto_directory_name",
-          "measure_definition_display_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_uuid": "b02e6c20-5b1a-0133-9a17-00ff10d0310d",
-          "measure_definition_version_uuid": "b030dd30-5b1a-0133-9a19-00ff10d0310d",
-          "measure_type": "RubyMeasure",
-          "arguments": [
-            {
-              "display_name": "Increase in Material and Installation Costs for Construction per Area Used ($/ft^2).",
-              "display_name_short": "Increase in Material and Installation Costs for Construction per Area Used ($/ft^2).",
-              "name": "material_cost_increase_ip",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "One Time Retrofit Cost to Add Insulation to Construction ($/ft^2).",
-              "display_name_short": "One Time Retrofit Cost to Add Insulation to Construction ($/ft^2).",
-              "name": "one_time_retrofit_cost_ip",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "Year to Incur One Time Retrofit Cost (whole years).",
-              "display_name_short": "Year to Incur One Time Retrofit Cost (whole years).",
-              "name": "years_until_retrofit_cost",
-              "value": 0,
-              "value_type": "integer"
-            }
-          ],
-          "display_name": "Set R-value of Insulation for Exterior Walls to a Specific Value",
-          "name": "set_r_value_of_insulation_for_exterior_walls_to_a_specific_value",
-          "variables": [
-            {
-              "argument": {
-                "display_name": "Wall R Value",
-                "display_name_short": "Wall R Value",
-                "name": "r_value",
-                "value_type": "double"
-              },
-              "display_name": "Wall R Value",
-              "display_name_short": "Wall R Value",
-              "maximum": 5.0,
-              "minimum": 0.0,
-              "relation_to_output": "",
-              "static_value": 5.0,
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "lower_bounds",
-                    "value": 0.0
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": 5.0
-                  },
-                  {
-                    "name": "stddev",
-                    "value": 0.8333333333333334
-                  },
-                  {
-                    "name": "delta_x",
-                    "value": null
-                  },
-                  {
-                    "name": "modes",
-                    "value": 2.5
-                  }
-                ],
-                "type": "triangle_uncertain"
-              },
-              "units": "",
-              "value_type": "double",
-              "variable": true,
-              "variable_type": "RubyContinuousVariable",
-              "uuid": "b0399001-5b1a-0133-9a1e-00ff10d0310d",
-              "version_uuid": "b03b64c0-5b1a-0133-9a20-00ff10d0310d"
-            }
-          ],
-          "workflow_index": 3,
-          "workflow_step_type": "Measure",
-          "uuid": "b033ea80-5b1a-0133-9a1b-00ff10d0310d",
-          "version_uuid": "b0365b90-5b1a-0133-9a1d-00ff10d0310d"
-        },
-        {
-          "measure_definition_class_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_directory": "./measures/example_measure_auto_directory_name",
-          "measure_definition_display_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_uuid": "b03dd5d0-5b1a-0133-9a22-00ff10d0310d",
-          "measure_definition_version_uuid": "b0401fd0-5b1a-0133-9a24-00ff10d0310d",
-          "measure_type": "RubyMeasure",
-          "arguments": [
-            {
-              "display_name": "Increase in Material and Installation Costs for Construction per Area Used ($/ft^2).",
-              "display_name_short": "Increase in Material and Installation Costs for Construction per Area Used ($/ft^2).",
-              "name": "material_cost_increase_ip",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "One Time Retrofit Cost to Add Insulation to Construction ($/ft^2).",
-              "display_name_short": "One Time Retrofit Cost to Add Insulation to Construction ($/ft^2).",
-              "name": "one_time_retrofit_cost_ip",
-              "value": 0.0,
-              "value_type": "double"
-            },
-            {
-              "display_name": "Year to Incur One Time Retrofit Cost (whole years).",
-              "display_name_short": "Year to Incur One Time Retrofit Cost (whole years).",
-              "name": "years_until_retrofit_cost",
-              "value": 0,
-              "value_type": "integer"
-            }
-          ],
-          "display_name": "Set R-value of Insulation for Roofs to a Specific Value",
-          "name": "set_r_value_of_insulation_for_roofs_to_a_specific_value",
-          "variables": [
-            {
-              "argument": {
-                "display_name": "Roof R Value",
-                "display_name_short": "Roof R Value",
-                "name": "r_value",
-                "value_type": "double"
-              },
-              "display_name": "Roof R Value",
-              "display_name_short": "Roof R Value",
-              "maximum": 5.0,
-              "minimum": 0.0,
-              "relation_to_output": "",
-              "static_value": 5.0,
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "lower_bounds",
-                    "value": 0.0
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": 5.0
-                  },
-                  {
-                    "name": "stddev",
-                    "value": 0.8333333333333334
-                  },
-                  {
-                    "name": "delta_x",
-                    "value": null
-                  },
-                  {
-                    "name": "modes",
-                    "value": 2.5
-                  }
-                ],
-                "type": "triangle_uncertain"
-              },
-              "units": "",
-              "value_type": "double",
-              "variable": true,
-              "variable_type": "RubyContinuousVariable",
-              "uuid": "b0488480-5b1a-0133-9a2a-00ff10d0310d",
-              "version_uuid": "b04b1ca0-5b1a-0133-9a2c-00ff10d0310d"
-            }
-          ],
-          "workflow_index": 4,
-          "workflow_step_type": "Measure",
-          "uuid": "b042b7f0-5b1a-0133-9a26-00ff10d0310d",
-          "version_uuid": "b0452900-5b1a-0133-9a28-00ff10d0310d"
-        },
-        {
-          "measure_definition_class_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_directory": "./measures/example_measure_auto_directory_name",
-          "measure_definition_display_name": "ExampleMeasureAutoDirectoryName",
-          "measure_definition_uuid": "b04db4c0-5b1a-0133-9a2e-00ff10d0310d",
-          "measure_definition_version_uuid": "b05025d0-5b1a-0133-9a30-00ff10d0310d",
-          "measure_type": "RubyMeasure",
-          "arguments": [
-            {
-              "display_name": "Apply the Measure to a Specific Space Type or to the Entire Model.",
-              "display_name_short": "Apply the Measure to a Specific Space Type or to the Entire Model.",
-              "name": "space_type",
-              "value": "*Entire Building*",
-              "value_type": "choice"
-            }
-          ],
-          "display_name": "Reduce Ventilation By Percentage",
-          "name": "reduce_ventilation_by_percentage",
-          "variables": [
-            {
-              "argument": {
-                "display_name": "Design Specification Outdoor Air Reduction (%).",
-                "display_name_short": "Design Specification Outdoor Air Reduction (%).",
-                "name": "design_spec_outdoor_air_reduction_percent",
-                "value_type": "double"
-              },
-              "display_name": "Design Specification Outdoor Air Reduction (%).",
-              "display_name_short": "Design Specification Outdoor Air Reduction (%).",
-              "maximum": 90.0,
-              "minimum": 0.0,
-              "relation_to_output": "",
-              "static_value": 0.0,
-              "uncertainty_description": {
-                "attributes": [
-                  {
-                    "name": "discrete",
-                    "values_and_weights": [
-                      {
-                        "value": 0
-                      },
-                      {
-                        "value": 10
-                      },
-                      {
-                        "value": 30
-                      },
-                      {
-                        "value": 60
-                      },
-                      {
-                        "value": 90
-                      }
-                    ]
-                  },
-                  {
-                    "name": "lower_bounds",
-                    "value": 0.0
-                  },
-                  {
-                    "name": "upper_bounds",
-                    "value": 90.0
-                  },
-                  {
-                    "name": "modes",
-                    "value": 45.0
-                  }
-                ],
-                "type": "discrete_uncertain"
-              },
-              "units": "",
-              "value_type": "double",
-              "variable": true,
-              "variable_type": "RubyContinuousVariable",
-              "uuid": "b0581540-5b1a-0133-9a36-00ff10d0310d",
-              "version_uuid": "b05a8650-5b1a-0133-9a38-00ff10d0310d"
-            }
-          ],
-          "workflow_index": 5,
-          "workflow_step_type": "Measure",
-          "uuid": "b05296e0-5b1a-0133-9a32-00ff10d0310d",
-          "version_uuid": "b05507f0-5b1a-0133-9a34-00ff10d0310d"
         }
       ],
-      "analysis_type": "lhs"
+      "analysis_type": "freeform"
     },
+    "design_alternatives": [
+      {
+        "name": "Reduce Lighting 20%",
+        "measures": [
+          {
+            "uuid": "affb25d0-5b1a-0133-99f1-00ff10d0310d",
+            "set_variable_values": {
+              "b0014070-5b1a-0133-99f4-00ff10d0310d": 20
+            }
+          }
+        ],
+        "uuid": "1"
+      },
+      {
+        "name": "Reduce Lighting 20% and then 30% after that",
+        "measures": [
+          {
+            "uuid": "affb25d0-5b1a-0133-99f1-00ff10d0310d",
+            "set_variable_values": {
+              "b0014070-5b1a-0133-99f4-00ff10d0310d": 20
+            }
+          },
+          {
+            "dlm_comment": "Can run the same measure twice with different values",
+            "uuid": "affb25d0-5b1a-0133-99f1-00ff10d0310d",
+            "set_variable_values": {
+              "b0014070-5b1a-0133-99f4-00ff10d0310d": 30
+            }
+          }
+        ],
+        "uuid": "2"
+      },
+      {
+        "name": "Reduce Lighting 20% and then Space Infiltration 30%",
+        "measures": [
+          {
+            "uuid": "affb25d0-5b1a-0133-99f1-00ff10d0310d",
+            "set_variable_values": {
+              "b0014070-5b1a-0133-99f4-00ff10d0310d": 20
+            }
+          },
+          {
+            "uuid": "b0095700-5b1a-0133-99fb-00ff10d0310d",
+            "set_variable_values": {
+              "b00eae50-5b1a-0133-99ff-00ff10d0310d": 30
+            }
+          }
+        ],
+        "uuid": "3"
+      }      
+    ],
     "seed": {
-      "file_type": "OSM",
-      "path": "./seed/small_seed.osm"
+      "dlm_comment": "Can this always be empty? Seed will be loaded by alternative model measure",
+      "file_type": "NONE",
+      "path": ""
     },
     "weather_file": {
-      "file_type": "EPW",
-      "path": "./weather/partial_weather.epw"
+      "dlm_comment": "Can this always be empty? EPW will be loaded by weather file measure",
+      "file_type": "NONE",
+      "path": ""
     }
   }
 }
